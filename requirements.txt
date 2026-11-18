@@ -1,0 +1,7 @@
+gradio>=6.0
+scikit-learn==1.6.1
+pandas
+numpy
+joblib
+imbalanced-learn
+lightgbm
