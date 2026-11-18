@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тетрада Фалло — рекомендательная система</title>
+  <meta name="description" content="Рекомендательная система выбора хирургической тактики при тетраде Фалло на основе клинических и эхокардиографических показателей.">
+  <meta property="og:title" content="Тетрада Фалло — рекомендательная система">
+  <meta property="og:description" content="Подбор рекомендованной хирургической тактики при тетраде Фалло прямо в браузере.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-container">
+    <header class="hero">
+      <h1 class="hero-title">🏥 Рекомендательная система</h1>
+      <p class="hero-subtitle">Хирургическая тактика при тетраде Фалло</p>
+      <div id="model-status" class="status-pill" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="model-status-text">Загрузка модели…</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="form-toolbar">
+        <span class="toolbar-hint">Дробные значения можно вводить через точку или запятую</span>
+        <div class="toolbar-actions">
+          <button type="button" id="toggle-sections-btn" class="btn-secondary">Развернуть все разделы</button>
+          <button type="button" id="reset-btn" class="btn-secondary">Сбросить поля</button>
+        </div>
+      </div>
+
+      <form id="tof-form" novalidate>
+        <div class="sections-stack">
+          <!-- 1. Общая информация о пациенте -->
+          <details class="accordion" open>
+            <summary class="accordion-summary">
+              <span class="summary-left">
+                <span class="summary-icon" aria-hidden="true">👤</span>
+                <span>Общая информация о пациенте</span>
+              </span>
+              <span class="summary-right">
+                <span class="field-count">6 параметров</span>
+                <svg class="chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="accordion-body">
+              <div class="field-grid cols-3">
+                <div class="field">
+                  <span class="field-label" id="label-pol">Пол</span>
+                  <div class="radio-group" role="radiogroup" aria-labelledby="label-pol">
+                    <label class="radio-option">
+                      <input type="radio" name="пол" value="1" checked>
+                      <span>Мужской</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="пол" value="2">
+                      <span>Женский</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="возраст">Возраст (дни)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="возраст" name="возраст" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="вес">Вес (кг)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="вес" name="вес" value="0">
+                </div>
+              </div>
+
+              <div class="field-grid cols-3">
+                <div class="field">
+                  <label class="field-label" for="рост">Рост (см)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="рост" name="рост" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="бса">БСА (см/м²)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="бса" name="бса" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="гествозраст">Гестационный возраст (дни)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="гествозраст" name="гествозраст" value="0">
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 2. Клинические данные -->
+          <details class="accordion" open>
+            <summary class="accordion-summary">
+              <span class="summary-left">
+                <span class="summary-icon" aria-hidden="true">🩺</span>
+                <span>Клинические данные</span>
+              </span>
+              <span class="summary-right">
+                <span class="field-count">3 параметра</span>
+                <svg class="chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="accordion-body">
+              <div class="field-grid cols-2-1">
+                <div class="field">
+                  <label class="field-label" for="сопвпс">Сопутствующие ВПС</label>
+                  <input class="input-control" type="text" autocomplete="off" id="сопвпс" name="сопвпс" placeholder="Введите описание или оставьте пустым">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="О2капиляр">SpO₂ капиллярной крови (%)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="О2капиляр" name="О2капиляр" value="0">
+                </div>
+              </div>
+
+              <div class="field-grid cols-1">
+                <div class="field">
+                  <span class="field-label" id="label-odysh">Одышка / цианоз при приступе</span>
+                  <div class="radio-group" role="radiogroup" aria-labelledby="label-odysh">
+                    <label class="radio-option">
+                      <input type="radio" name="одышцианприст" value="1" checked>
+                      <span>Нет</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="одышцианприст" value="2">
+                      <span>Есть</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 3. Эхокардиография -->
+          <details class="accordion">
+            <summary class="accordion-summary">
+              <span class="summary-left">
+                <span class="summary-icon" aria-hidden="true">📊</span>
+                <span>Эхокардиография</span>
+              </span>
+              <span class="summary-right">
+                <span class="field-count">4 параметра</span>
+                <svg class="chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="accordion-body">
+              <div class="field-grid cols-4">
+                <div class="field">
+                  <label class="field-label" for="фвлжпервич">ФВ ЛЖ первич (%)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="фвлжпервич" name="фвлжпервич" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="кдрлж">КДР ЛЖ (см)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="кдрлж" name="кдрлж" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="ксрлж">КСР ЛЖ (см)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="ксрлж" name="ксрлж" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="кдолж">КДО ЛЖ (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="кдолж" name="кдолж" value="0">
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 4. Показатели лёгочной артерии -->
+          <details class="accordion">
+            <summary class="accordion-summary">
+              <span class="summary-left">
+                <span class="summary-icon" aria-hidden="true">🫁</span>
+                <span>Показатели лёгочной артерии</span>
+              </span>
+              <span class="summary-right">
+                <span class="field-count">6 параметров</span>
+                <svg class="chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="accordion-body">
+              <div class="field-grid cols-4">
+                <div class="field">
+                  <label class="field-label" for="устьеПЛА">Устье ПЛА (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="устьеПЛА" name="устьеПЛА" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="УстьеЛЛА">Устье ЛЛА (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="УстьеЛЛА" name="УстьеЛЛА" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="ствол_ла">Ствол ЛА (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="ствол_ла" name="ствол_ла" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="фк_ла">ФК ЛА (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="фк_ла" name="фк_ла" value="0">
+                </div>
+              </div>
+
+              <div class="field-grid cols-2-1">
+                <div class="field">
+                  <label class="field-label" for="створкиклЛА">Створки клапана ЛА</label>
+                  <input class="input-control" type="text" autocomplete="off" id="створкиклЛА" name="створкиклЛА" placeholder="Например: удлинены, уплотнены, сращены, гранично подвижны">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="градиентдавленияпжла">Градиент ПЖ/ЛА (мм.рт.ст.)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="градиентдавленияпжла" name="градиентдавленияпжла" value="0">
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- 5. Дополнительные показатели -->
+          <details class="accordion">
+            <summary class="accordion-summary">
+              <span class="summary-left">
+                <span class="summary-icon" aria-hidden="true">📈</span>
+                <span>Дополнительные показатели</span>
+              </span>
+              <span class="summary-right">
+                <span class="field-count">4 параметра</span>
+                <svg class="chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </summary>
+            <div class="accordion-body">
+              <div class="field-grid cols-4">
+                <div class="field">
+                  <label class="field-label" for="дмжпмм">ДМЖП (мм)</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="дмжпмм" name="дмжпмм" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="давлениеПЖ">Давление ПЖ</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="давлениеПЖ" name="давлениеПЖ" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="ЛАИ">ЛАИ</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="ЛАИ" name="ЛАИ" value="0">
+                </div>
+                <div class="field">
+                  <label class="field-label" for="ABнАо">ABнАо</label>
+                  <input class="input-control" type="text" inputmode="decimal" autocomplete="off" id="ABнАо" name="ABнАо" value="0">
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" id="submit-btn" class="btn-primary" disabled>
+            <span aria-hidden="true">🔮</span>
+            <span>Получить рекомендацию</span>
+          </button>
+        </div>
+      </form>
+
+      <hr class="section-divider">
+
+      <section id="results-section" class="results-grid" aria-label="Результаты расчёта">
+        <div class="panel data-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">📋 Введённые данные</h2>
+          </div>
+          <div id="display-out">
+            <div class="empty-state">
+              <div class="empty-state-icon" aria-hidden="true">📋</div>
+              Заполните показатели пациента и нажмите «Получить рекомендацию»
+            </div>
+          </div>
+        </div>
+
+        <div class="panel result-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">🎯 Заключение системы</h2>
+            <button type="button" id="print-btn" class="btn-secondary" hidden>🖨️ Печать / PDF</button>
+          </div>
+          <div id="result-out">
+            <div class="empty-state">
+              <div class="empty-state-icon" aria-hidden="true">🩺</div>
+              Здесь появится рекомендованная хирургическая тактика
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="legend-section" aria-labelledby="legend-title">
+        <h2 id="legend-title" class="legend-title">📚 Расшифровка рекомендаций</h2>
+        <div class="legend-grid">
+          <div class="legend-item">
+            <span class="legend-emoji" aria-hidden="true">✅</span>
+            <div class="legend-text">
+              <strong>Радикальная коррекция</strong>
+              Полное анатомическое устранение порока
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-emoji" aria-hidden="true">🔧</span>
+            <div class="legend-text">
+              <strong>Реконструкция путей оттока ПЖ</strong>
+              Пластика выводного тракта правого желудочка
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-emoji" aria-hidden="true">🔗</span>
+            <div class="legend-text">
+              <strong>Системно-лёгочный анастомоз</strong>
+              Паллиативное хирургическое вмешательство
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-emoji" aria-hidden="true">💉</span>
+            <div class="legend-text">
+              <strong>Баллонная вальвулопластика / стентирование</strong>
+              Эндоваскулярное вмешательство на клапане ЛА / ВОПЖ
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      Расчёт выполняется локально в браузере — данные пациента не передаются на внешние серверы.<br>
+      Результаты носят рекомендательный характер и предназначены для поддержки принятия врачебных решений.
+    </footer>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

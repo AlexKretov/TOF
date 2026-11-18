@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import gradio as gr
 import pandas as pd
 import numpy as np
@@ -97,7 +99,7 @@ footer { display: none !important; }
 #                    ЗАГРУЗКА МОДЕЛИ
 # ============================================================
 try:
-    MODEL = joblib.load('model.pkl')
+    MODEL = joblib.load(Path(__file__).resolve().parent / 'model.pkl')
     MODEL_ERROR = None
 except Exception as e:
     MODEL = None
@@ -193,7 +195,7 @@ def predict(пол, возраст, вес, рост, бса, сопвпс, ге
 
         df[['пол', 'одышцианприст']] = df[['пол', 'одышцианприст']].astype('category')
         df['log'] = np.log((df['ABнАо'] * df['ЛАИ']) + 1e-9)
-        df['одышцианприст'] = df['одышцианприст'].replace({2: 1, 1: 0}).astype(int)
+        df['одышцианприст'] = df['одышцианприст'].astype(int).replace({2: 1, 1: 0})
 
         s = df['створкиклЛА'].fillna('')
         df['створки_удлинены']  = s.str.contains('длин', case=False).astype(int)
@@ -353,8 +355,8 @@ if __name__ == '__main__':
         theme=gr.themes.Soft(primary_hue="indigo", secondary_hue="purple"),
         css=CUSTOM_CSS,
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=int(os.environ.get("PORT", "7860")),
         ssr_mode=False,
-        share=False,          # ← убрали True
+        share=False,
         show_error=True,
     )
